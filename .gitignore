@@ -1,0 +1,13 @@
+# SQLite baza fayli
+*.db
+
+# Dastur ishga tushganda hosil bo'ladigan binary (executable) fayllar
+/my-project
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Muhit o'zgaruvchilari (maxfiy ma'lumotlar)
+.env
