@@ -4,10 +4,69 @@ import (
 	"database/sql"
 	"my-project/config"
 	"my-project/model"
+	"os"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt"
+	"golang.org/x/crypto/bcrypt"
 )
 
+func Login(c *gin.Context) {
+	var Input model.User
+	var dbUser model.User
+
+	if err := c.ShouldBindJSON(&Input); err != nil {
+		c.JSON(400, gin.H{"error": "Malumot noto'h'ri"})
+		return
+	}
+	err := config.DB.QueryRow("SELECT id,username,password FROM users WHERE username=?", Input.Username).Scan(&dbUser.Id, &dbUser.Username, &dbUser.Password)
+	if err != nil {
+		c.JSON(401, gin.H{"error": "Foydalanuvchi topilmadi yoki parol xato"})
+		return
+	}
+	err = bcrypt.CompareHashAndPassword([]byte(dbUser.Password), []byte(Input.Password))
+	if err != nil {
+		c.JSON(401, gin.H{"error": "Foydalanuvchi topilmadi yoki parol xato kiritildi"})
+		return
+	}
+	var Secret = []byte(os.Getenv("jwtSecret"))
+	createToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id": dbUser.Id,
+		"exp":     time.Now().Add(time.Hour * 24).Unix(),
+	})
+	token, err := createToken.SignedString(Secret)
+	if err != nil {
+		c.JSON(500, gin.H{"error": "token yaratishda muammo bor"})
+		return
+	}
+	c.JSON(201, gin.H{
+		"message": "xush kelipsiz",
+		"token":   token,
+	})
+
+}
+
+func Register(c *gin.Context) {
+	var user model.User
+
+	if err := c.ShouldBindJSON(&user); err != nil {
+		c.JSON(400, gin.H{"error": "user qushish tizimi hosircha ishlamayapti keyinroq urnalab ko'ring"})
+		return
+
+	}
+	hashpasword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	if err != nil {
+		c.JSON(500, gin.H{"error": "parolni saqlash qismida xatolik mavjud"})
+		return
+	}
+	_, err = config.DB.Exec("INSERT INTO users(username,password) VALUES(?,?)", user.Username, string(hashpasword))
+	if err != nil {
+		c.JSON(400, gin.H{"error": "bu login band qayta urinib ko'ring"})
+		return
+	}
+	c.JSON(201, gin.H{"message": "foydalanuvchi muaffaqiyatli yaratildi"})
+}
 func Addtodo(c *gin.Context) {
 	var newTodo model.Todo
 
