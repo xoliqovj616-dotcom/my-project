@@ -25,6 +25,10 @@ func Authmidllware() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
+		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+			userID := int(claims["user_id"].(float64))
+			c.Set("userID", userID)
+		}
 		c.Next()
 	}
 

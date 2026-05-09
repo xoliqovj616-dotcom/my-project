@@ -1,0 +1,201 @@
+basePath: /api
+definitions:
+  model.Todo:
+    properties:
+      completed:
+        type: integer
+      id:
+        type: integer
+      time:
+        type: string
+      user_id:
+        type: integer
+      work:
+        type: string
+    type: object
+  model.User:
+    properties:
+      id:
+        type: integer
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+host: localhost:8080
+info:
+  contact:
+    name: Jamshid
+    url: https://t.me/Xoliqov_jamshid
+  description: Bu Go va Gin yordamida to-do API loyihasi.
+  termsOfService: http://swagger.io/terms/
+  title: Mening To-Do API-im
+  version: "1.0"
+paths:
+  /deletetodo/{id}:
+    delete:
+      parameters:
+      - description: Todo ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Todoni o'chirish
+      tags:
+      - todo
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Username va password orqali JWT token oladi
+      parameters:
+      - description: Login ma'lumotlari
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/model.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: token qaytadi
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Tizimga kirish
+      tags:
+      - auth
+  /register:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Yangi foydalanuvchi
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/model.User'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Ro'yxatdan o'tish
+      tags:
+      - auth
+  /todolarniolish:
+    get:
+      consumes:
+      - application/json
+      description: Foydalanuvchiga tegishli barcha vazifalar ro'yxatini qaytaradi
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Todo'
+            type: array
+      security:
+      - ApiKeyAuth: []
+      summary: Barcha todolarni olish
+      tags:
+      - todo
+  /todoniolish/{id}:
+    get:
+      description: ID bo'yicha bitta vazifani batafsil ko'rish
+      parameters:
+      - description: Todo ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Todo'
+      security:
+      - ApiKeyAuth: []
+      summary: Bitta todoni olish
+      tags:
+      - todo
+  /todoniyangilash/{id}:
+    put:
+      parameters:
+      - description: Todo ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Yangi ma'lumotlar
+        in: body
+        name: todo
+        required: true
+        schema:
+          $ref: '#/definitions/model.Todo'
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Todoni yangilash
+      tags:
+      - todo
+  /todoqushish:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Yangi vazifa ma'lumotlari
+        in: body
+        name: task
+        required: true
+        schema:
+          $ref: '#/definitions/model.Todo'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.Todo'
+      security:
+      - ApiKeyAuth: []
+      summary: Yangi todo qo'shish
+      tags:
+      - todo
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
